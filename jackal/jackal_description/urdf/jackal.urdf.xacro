@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<robot name="jackal" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:include filename="$(find jackal_description)/urdf/macros.urdf.xacro" />
+
+  <!-- Arguments -->
+  <xacro:arg name="moveit_active" default="false" />
+  <xacro:arg name="sim_gazebo" default="true" />
+  <xacro:arg name="use_camera" default="true" />
+  <xacro:arg name="use_lidar" default="true" />
+  <xacro:arg name="prefix" default=""/>
+  <xacro:arg name="arm_prefix" default="kinova_"/>
+
+  <xacro:arg name="namespace" default="" />
+
+  <xacro:arg name="arm" default="" />
+  <xacro:arg name="gripper" default="" />
+
+  <xacro:include filename="$(find jackal_description)/urdf/jackal_macro.urdf.xacro" />
+  <xacro:load_jackal prefix="$(arg prefix)"
+                     arm="$(arg arm)"
+                     gripper="$(arg gripper)"
+                     sim_gazebo="$(arg sim_gazebo)"
+                     use_camera="$(arg use_camera)"
+                     use_lidar="$(arg use_lidar)" >
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:load_jackal>
+
+  <xacro:unless value="${not '$(arg arm)'}">
+    <!--
+      Import the appropriate arm. Available arms and their compatible grippers at
+      https://github.com/MOBILAB-UDESC/arms
+    -->
+    <xacro:if value="${'$(arg arm)' == 'gen3_lite'}">
+      <xacro:arg name="joint_limits" default="$(find gen3_lite_description)/config/joint_limits.yaml" />
+      <xacro:arg name="initial_position" default="$(find gen3_lite_description)/config/initial_position.yaml" />
+      <xacro:include filename="$(find gen3_lite_description)/urdf/gen3_lite_macro.urdf.xacro" />
+      <xacro:include filename="$(find gen3_lite_description)/urdf/macros.urdf.xacro" />
+    </xacro:if>
+    <xacro:if value="${'$(arg arm)' == 'unitree_d1'}">
+      <xacro:arg name="joint_limits" default="$(find unitree_d1_description)/config/joint_limits.yaml" />
+      <xacro:arg name="initial_position" default="$(find unitree_d1_description)/config/initial_position.yaml" />
+      <xacro:include filename="$(find unitree_d1_description)/urdf/unitree_d1_macro.urdf.xacro" />
+      <xacro:include filename="$(find unitree_d1_description)/urdf/macros.urdf.xacro" />
+    </xacro:if>
+    <xacro:if value="${'$(arg arm)' == 'unitree_z1'}">
+      <xacro:arg name="joint_limits" default="$(find unitree_z1_description)/config/joint_limits.yaml" />
+      <xacro:arg name="initial_position" default="$(find unitree_z1_description)/config/initial_position.yaml" />
+      <xacro:include filename="$(find unitree_z1_description)/urdf/unitree_z1_macro.urdf.xacro" />
+      <xacro:include filename="$(find unitree_z1_description)/urdf/macros.urdf.xacro" />
+    </xacro:if>
+
+    <xacro:load_arm parent="$(arg prefix)mid_mount"
+        prefix="$(arg arm_prefix)"
+        sim_gazebo="$(arg sim_gazebo)"
+        gripper="$(arg gripper)"
+        use_camera="false" >
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:load_arm>
+
+    <xacro:unless value="${not '$(arg gripper)'}" >
+      <!--
+        Import the appropriate gripper. Available arms and their compatible grippers at
+        https://github.com/MOBILAB-UDESC/arms
+      -->
+      <xacro:if value="${'$(arg gripper)' == 'kinova_2f_lite'}">
+        <xacro:include filename="$(find kinova_2f_lite_description)/urdf/kinova_2f_lite_macro.urdf.xacro" />
+      </xacro:if>
+      <xacro:if value="${'$(arg gripper)' == 'robotiq_2f_85'}">
+        <xacro:include filename="$(find robotiq_2f_85_description)/urdf/robotiq_2f_85_macro.urdf.xacro" />
+      </xacro:if>
+
+      <xacro:load_gripper parent="${last_arm_link}"
+          prefix="$(arg arm_prefix)"
+          sim_gazebo="$(arg sim_gazebo)" >
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </xacro:load_gripper>
+    </xacro:unless>
+
+  </xacro:unless>
+
+</robot>

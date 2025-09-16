@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>jackal_description</name>
+  <version>0.0.0</version>
+  <description>
+    URDF description, Gazebo simulation, and ROS 2 control configuration for the Jackal mobile robot platform.
+    Supports integration with various robotic arms and grippers.
+    Includes launch files for standalone simulation and multi-robot scenarios.
+  </description>
+  <maintainer email="nilton.csv18@edu.udesc.br">nilton</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>controller_manager</depend>
+  <depend>geometry_msgs</depend>
+  <depend>gz_msgs_vendor</depend>
+  <depend>gz_ros2_control</depend>
+  <!-- to use ReplaceString -->
+  <depend>nav2_common</depend>
+  <depend>rclcpp</depend>
+  <depend>ros_gz_bridge</depend>
+  <depend>ros_gz_sim</depend>
+  <depend>xacro</depend>
+
+  <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- Optional arm and gripper dependencies -->
+  <exec_depend>gen3_lite_description</exec_depend>
+  <exec_depend>kinova_2f_lite_description</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

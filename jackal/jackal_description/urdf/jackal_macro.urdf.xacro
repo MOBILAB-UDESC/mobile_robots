@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:macro name="load_jackal" params="
+      *origin
+      arm:=gen3_lite
+      gripper:=kinova_2f_lite
+      namespace:=''
+      prefix:=''
+      sim_gazebo:=true
+      use_camera:=true
+      use_lidar:=true">
+    <!-- Links and joints -->
+    <link name="${prefix}base_link"></link>
+
+    <joint name="${prefix}base_link_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}chassis_link" />
+    </joint>
+
+    <link name="${prefix}chassis_link">
+      <visual>
+        <origin xyz="0 0 ${footprint_vertical_offset}" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+        <geometry>
+          <mesh filename="file://$(find jackal_description)/meshes/jackal-base.stl"/>
+        </geometry>
+        <material name="dark_grey" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${chassis_height/2}"/>
+        <geometry>
+          <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0.012  0.002 0.067" rpy="0 0 0"/>
+        <mass value="16.523"/>
+        <inertia
+          ixx="0.3136" ixy="-0.0008" ixz="0.0164"
+          iyy="0.3922" iyz="-0.0009"
+          izz="0.4485"/>
+        </inertial>
+    </link>
+
+    <link name="${prefix}front_fender_link">
+      <visual>
+        <geometry>
+          <mesh filename="file://$(find jackal_description)/meshes/accessory_fender.stl"/>
+        </geometry>
+        <material name="yellow" />
+      </visual>
+    </link>
+
+    <link name="${prefix}front_fender_accessory_link"/>
+    <joint name="${prefix}front_fender_accessory_joint" type="fixed">
+      <origin xyz="0.25629 0 0.07455" rpy="${M_PI} 0 0" />
+      <parent link="${prefix}front_fender_link" />
+      <child link="${prefix}front_fender_accessory_link" />
+    </joint>
+
+    <joint name="${prefix}front_fender_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${prefix}chassis_link" />
+      <child link="${prefix}front_fender_link" />
+    </joint>
+
+    <link name="${prefix}rear_fender_link">
+      <visual>
+        <geometry>
+          <mesh filename="file://$(find jackal_description)/meshes/accessory_fender.stl"/>
+        </geometry>
+        <material name="yellow" />
+      </visual>
+    </link>
+
+    <link name="${prefix}rear_fender_accessory_link"/>
+    <joint name="${prefix}rear_fender_accessory_joint" type="fixed">
+      <origin xyz="0.25629 0 0.07455" rpy="${M_PI} 0 0" />
+      <parent link="${prefix}rear_fender_link" />
+      <child link="${prefix}rear_fender_accessory_link" />
+    </joint>
+
+    <joint name="${prefix}rear_fender_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 ${M_PI}"/>
+      <parent link="${prefix}chassis_link" />
+      <child link="${prefix}rear_fender_link" />
+    </joint>
+
+    <!-- Wheels links and joints -->
+    <xacro:wheel prefix="${prefix}" wheel_prefix="front_left">
+      <origin xyz="${wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:wheel>
+    <xacro:wheel prefix="${prefix}" wheel_prefix="front_right">
+      <origin xyz="${wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:wheel>
+    <xacro:wheel prefix="${prefix}" wheel_prefix="rear_left">
+      <origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:wheel>
+    <xacro:wheel prefix="${prefix}" wheel_prefix="rear_right">
+      <origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:wheel>
+
+    <!-- Default Internal IMU Link -->
+    <link name="${prefix}imu_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="${dummy_inertia}" ixy="0.0" ixz="0.0" iyy="${dummy_inertia}" iyz="0.0" izz="${dummy_inertia}"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}imu_joint" type="fixed">
+      <parent link="${prefix}chassis_link" />
+      <child link="${prefix}imu_link" />
+    </joint>
+
+    <!-- Default NAVSAT Link -->
+    <link name="${prefix}navsat_link">
+      <visual>
+        <geometry>
+          <cylinder radius="0.026" length="0.016" />
+        </geometry>
+        <origin xyz="0 0 0.008" />
+        <material name="black" />
+      </visual>
+    </link>
+    <joint name="${prefix}navsat_joint" type="fixed">
+      <parent link="${prefix}chassis_link" />
+      <child link="${prefix}navsat_link" />
+      <origin xyz="-0.180 0.126 0.1815" />
+    </joint>
+
+    <!-- Accesory mounts -->
+    <link name="${prefix}mid_mount"></link>
+    <joint name="${prefix}mid_mount_joint" type="fixed">
+      <parent link="${prefix}chassis_link" />
+      <child link="${prefix}mid_mount" />
+      <origin xyz="0 0 ${chassis_height}" />
+    </joint>
+
+    <link name="${prefix}rear_mount"></link>
+    <joint name="${prefix}rear_mount_joint" type="fixed">
+      <parent link="${prefix}mid_mount" />
+      <child link="${prefix}rear_mount" />
+      <origin xyz="${-mount_spacing} 0 0" />
+    </joint>
+
+    <link name="${prefix}front_mount"></link>
+    <joint name="${prefix}front_mount_joint" type="fixed">
+      <parent link="${prefix}mid_mount" />
+      <child link="${prefix}front_mount" />
+      <origin xyz="${mount_spacing} 0 0" />
+    </joint>
+
+    <!-- Camera -->
+    <xacro:if value="${use_camera}">
+      <xacro:include filename="$(find jackal_description)/urdf/accessories/camera/camera_mount.urdf.xacro" />
+      <xacro:camera_mount mount_prefix="front" prefix="${prefix}" tilt="0.2" sim_gazebo="${sim_gazebo}" />
+
+      <joint name="${prefix}front_camera_mount_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="${prefix}front_mount" />
+        <child link="${prefix}front_camera_mount" />
+      </joint>
+
+      <!-- Realsense D435 -->
+      <xacro:property name="use_nominal_extrinsics" value="true"/>
+      <xacro:property name="add_plug" value="true" />
+      <xacro:property name="use_mesh" value="true" />
+      <xacro:include filename="$(find jackal_description)/urdf/accessories/camera/D435/_d435.urdf.xacro" />
+
+      <xacro:sensor_d435
+          add_plug="${add_plug}"
+          name="camera"
+          parent="${prefix}front_camera_beam"
+          prefix="${prefix}"
+          use_mesh="${use_mesh}"
+          use_nominal_extrinsics="${use_nominal_extrinsics}">
+        <origin xyz="0 0 0.04" rpy="0 0 0" />
+      </xacro:sensor_d435>
+    </xacro:if>
+
+    <!-- Lidar -->
+    <xacro:if value="${use_lidar}">
+      <xacro:include filename="$(find jackal_description)/urdf/accessories/lidar/OS1-32.urdf.xacro" />
+      <xacro:OS1-32 name="os" parent="${prefix}front_mount" prefix="${prefix}" sim_gazebo="${sim_gazebo}">
+        <origin xyz="0.0 0.0 0.10201" rpy="0 0 0"/>
+      </xacro:OS1-32>
+    </xacro:if>
+
+    <!-- ROS 2 control -->
+    <xacro:include filename="$(find jackal_description)/urdf/ros2_control/jackal_ros2_control.urdf.xacro" />
+    <xacro:jackal_ros2_control prefix="${prefix}" sim_gazebo="${sim_gazebo}"/>
+
+    <!-- Gazebo -->
+    <xacro:if value="${sim_gazebo}">
+      <xacro:include filename="$(find jackal_description)/urdf/gz/jackal.gazebo.xacro"/>
+      <xacro:jackal_gazebo
+        prefix="${prefix}"
+        use_camera="${use_camera}">
+      </xacro:jackal_gazebo>
+    </xacro:if>
+
+  </xacro:macro>
+
+</robot>
