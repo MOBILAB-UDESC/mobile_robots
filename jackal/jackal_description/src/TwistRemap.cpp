@@ -15,8 +15,8 @@
 class TwistToTwistStamped : public rclcpp::Node
 {
 public:
-  TwistToTwistStamped()
-  : Node("twist_to_twist_stamped")
+  TwistToTwistStamped(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  : Node("twist_to_twist_stamped", options)
   {
     twist_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&TwistToTwistStamped::cmd_vel_callback, this, std::placeholders::_1));
@@ -28,11 +28,16 @@ public:
 private:
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
+
+    if (!this->has_parameter("frame_id")) {
+      this->declare_parameter("frame_id", "base_link");
+    }
+
     auto twist_stamped_msg = std::make_shared<geometry_msgs::msg::TwistStamped>();
 
     // Add timestamp and frame_id to the header
     twist_stamped_msg->header.stamp = this->now();
-    twist_stamped_msg->header.frame_id = "base_link";
+    twist_stamped_msg->header.frame_id = this->get_parameter("frame_id").as_string();
 
     // Copy velocity data from the twist message
     twist_stamped_msg->twist = *msg;
@@ -48,7 +53,12 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<TwistToTwistStamped>();
+
+  rclcpp::NodeOptions options;
+  options.automatically_declare_parameters_from_overrides(true);
+
+  auto node = std::make_shared<TwistToTwistStamped>(options);
+
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;

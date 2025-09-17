@@ -1,5 +1,4 @@
 from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import OpaqueFunction, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
@@ -13,11 +12,8 @@ from nav2_common.launch import ReplaceString
 
 def arm_ros2_setup(context, *args, **kwargs):
     """
-        Set up ROS 2 control for robotic arm and gripper.
+        Set up ROS 2 control for the selected robotic arm and gripper.
 
-        This function performs the following tasks:
-        - Dynamically determine package paths based on the selected arm.
-        - Replace the <robot_prefix> placeholder in the ros2_control.yaml file with the arm_prefix arg.
         Controllers are launched in sequence:
             1. arm_controller
             2. gripper_controller (after arm_controller exits, if 'gripper' is enabled)
@@ -35,26 +31,16 @@ def arm_ros2_setup(context, *args, **kwargs):
     if not arm_name:
         return []
 
-    # arm_pkg_path = get_package_share_directory(f'{arm_name}_description')
+    # arms_bringup pkg contains config files for all supported arms + grippers
     arm_bringup_pkg_path = get_package_share_directory('arms_bringup')
 
+    # Replace the <robot_prefix> placeholder in the ros2_control.yaml file with the arm_prefix arg.
     ros2_control_params = PathJoinSubstitution(
         [arm_bringup_pkg_path, 'config', 'ros2_control.yaml'])
-
     ros2_control_params = ReplaceString(
         source_file=ros2_control_params,
         replacements={'<robot_prefix>': (LaunchConfiguration('arm_prefix', default=''))},
     )
-
-    # joint_state_broadcaster = Node(
-    #     package='controller_manager',
-    #     executable='spawner',
-    #     output='screen',
-    #     name='joint_state_broadcaster',
-    #     namespace=namespace,
-    #     arguments=['joint_state_broadcaster'],
-    #     parameters=[{'use_sim_time': use_sim_time}],
-    # )
 
     arm_controller = Node(
         package='controller_manager',
@@ -86,13 +72,6 @@ def arm_ros2_setup(context, *args, **kwargs):
 
         return [arm_controller, arm_to_gripper]
 
-    # joint_to_arm = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=joint_state_broadcaster,
-    #         on_exit=[arm_controller],
-    #     )
-    # )
-
     return [arm_controller]
 
 
@@ -110,7 +89,8 @@ def generate_launch_description():
 
     ros2_control_params = ReplaceString(
         source_file=ros2_control_params,
-        replacements={'<robot_prefix>': (LaunchConfiguration('prefix', default=''))},
+        replacements={'<robot_namespace_prefix>': (LaunchConfiguration('namespace_prefix', default='')),
+                      '<robot_prefix>': (LaunchConfiguration('prefix', default=''))},
     )
 
     joint_state_broadcaster = Node(
@@ -135,11 +115,21 @@ def generate_launch_description():
 
     return LaunchDescription([
         joint_state_broadcaster,
-        diff_drive_base_controller,
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=joint_state_broadcaster,
-                on_exit=[OpaqueFunction(function=arm_ros2_setup, args=[namespace, use_sim_time])],
+                on_exit=diff_drive_base_controller,
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=diff_drive_base_controller,
+                on_exit=[
+                    OpaqueFunction(
+                        function=arm_ros2_setup,
+                        args=[namespace, use_sim_time],
+                    )
+                ],
             )
         )
     ])

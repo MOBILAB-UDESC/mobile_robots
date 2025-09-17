@@ -1,47 +1,51 @@
-# - ros_topic_name: "clock"
-#   gz_topic_name : "clock"
-#   ros_type_name : "rosgraph_msgs/msg/Clock"
-#   gz_type_name  : "gz.msgs.Clock"
-#   direction     : GZ_TO_ROS
+# Gazebo-ROS Bridge Configuration File
+#
+# This config file uses placeholders that are replaced at launch time in jackal_ekf_launch.py
+#
+# <robot_namespace_prefix> - Combined namespace/prefix from launch args (e.g., "robot1/jackal_") - matches URDF topics definitions
+# <robot_namespace>        - Namespace from launch args (e.g., "robot1") - for clean ROS2 sensor topics
+#
+# Example: When namespace="robot1" and prefix="jackal_":
+#   Gazebo: /robot1/jackal_imu → ROS2: /robot1/imu
 
-- ros_topic_name: "/<robot_prefix>imu"
-  gz_topic_name: "/<robot_prefix>imu"
+- ros_topic_name: "/<robot_namespace>imu"
+  gz_topic_name: "/<robot_namespace_prefix>imu"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "gz.msgs.IMU"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>rgb/image"
-  gz_topic_name : "/<robot_prefix>rgbd_camera/image"
+- ros_topic_name: "/<robot_namespace>rgb/image"
+  gz_topic_name : "/<robot_namespace_prefix>rgbd_camera/image"
   ros_type_name : "sensor_msgs/msg/Image"
   gz_type_name  : "gz.msgs.Image"
   direction     : GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>rgbd_camera/points"
-  gz_topic_name : "/<robot_prefix>rgbd_camera/points"
+- ros_topic_name: "/<robot_namespace>rgbd_camera/points"
+  gz_topic_name : "/<robot_namespace_prefix>rgbd_camera/points"
   ros_type_name : "sensor_msgs/msg/PointCloud2"
   gz_type_name  : "gz.msgs.PointCloudPacked"
   direction     : GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>depth/image"
-  gz_topic_name : "/<robot_prefix>rgbd_camera/depth_image"
+- ros_topic_name: "/<robot_namespace>depth/image"
+  gz_topic_name : "/<robot_namespace_prefix>rgbd_camera/depth_image"
   ros_type_name : "sensor_msgs/msg/Image"
   gz_type_name  : "gz.msgs.Image"
   direction     : GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>rgb/camera_info"
-  gz_topic_name : "/<robot_prefix>rgbd_camera/camera_info"
+- ros_topic_name: "/<robot_namespace>rgb/camera_info"
+  gz_topic_name : "/<robot_namespace_prefix>rgbd_camera/camera_info"
   ros_type_name : "sensor_msgs/msg/CameraInfo"
   gz_type_name  : "gz.msgs.CameraInfo"
   direction     : GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>scan"
-  gz_topic_name: "/<robot_prefix>ouster"
+- ros_topic_name: "/<robot_namespace>scan"
+  gz_topic_name: "/<robot_namespace_prefix>ouster"
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/<robot_prefix>scan_cloud"
-  gz_topic_name : "/<robot_prefix>ouster/points"
+- ros_topic_name: "/<robot_namespace>scan_cloud"
+  gz_topic_name : "/<robot_namespace_prefix>ouster/points"
   ros_type_name : "sensor_msgs/msg/PointCloud2"
   gz_type_name  : "gz.msgs.PointCloudPacked"
   direction     : GZ_TO_ROS

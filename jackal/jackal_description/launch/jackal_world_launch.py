@@ -11,7 +11,6 @@ def generate_launch_description():
     """Launch Gazebo world and bridge clock topic."""
     packagePath = get_package_share_directory("jackal_description")
 
-    # Launch world
     gazebo_path = PathJoinSubstitution([packagePath, 'worlds', LaunchConfiguration('world_name')])
 
     gazebo_world_node = IncludeLaunchDescription(
@@ -37,7 +36,6 @@ def generate_launch_description():
         arguments=['/clock' + '@rosgraph_msgs/msg/Clock' + '[gz.msgs.Clock']
     )
 
-    # Declare launch arguments
     args = [
         DeclareLaunchArgument(
             'world_name',

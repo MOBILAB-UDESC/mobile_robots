@@ -1,5 +1,4 @@
 from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -24,8 +23,11 @@ def launch_setup(context, *args, **kwargs):
     - Generate the robot description using xacro with the specified args.
     - Launch the robot_state_publisher node to publish the robot's state.
     - Optionally launch the joint_state_publisher_gui node if simulation time is disabled.
-    - Optionally launch RViz2 if visualization is enabled.
     - Include the Gazebo simulation launch file if simulation time is enabled.
+    - Launch the ROS 2 control nodes for the robot and any attached arm/gripper if enabled.
+    - Optionally launch RViz2 if enabled.
+    - Launch the EKF node for state estimation.
+    - Launch a node to remap Twist messages to TwistStamped (for fast testing).
 
     Returns:
         list: Launch actions (nodes and included launch descriptions) ready for execution.
@@ -38,16 +40,16 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration('use_sim_time')
 
     # Modify prefix to namespace/prefix if namespace is used
+    robot_name = 'jackal'
+    namespace_prefix = prefix
     if namespace.perform(context):
-        prefix = f'{namespace.perform(context)}/{prefix}'
+        namespace_prefix = f'{namespace.perform(context)}/{prefix}'
         arm_prefix = f'{namespace.perform(context)}/{arm_prefix}'
-
-    robot_name = f'{prefix}jackal'
+        robot_name = f'{namespace.perform(context)}/jackal'
 
     pkg_name = 'jackal_description'
     pkg_path = get_package_share_directory(pkg_name)
 
-    # Generate robot description using xacro and the provided arguments
     robot_description = Command([
         'xacro ',
         PathJoinSubstitution([pkg_path, 'urdf', 'jackal.urdf.xacro']),
@@ -56,10 +58,10 @@ def launch_setup(context, *args, **kwargs):
         ' gripper:=', gripper,
         ' name:=', robot_name,
         ' namespace:=', namespace,
-        ' prefix:=', prefix,
+        ' prefix:=', namespace_prefix,
         ' sim_gazebo:=', use_sim_time,
-        # ' use_camera:=',
-        # ' use_lidar:=',
+        ' use_camera:=', LaunchConfiguration('use_camera'),
+        ' use_lidar:=', LaunchConfiguration('use_lidar'),
     ])
 
     robot_state_node = Node(
@@ -82,7 +84,6 @@ def launch_setup(context, *args, **kwargs):
         namespace=namespace,
     )
 
-    # Gazebo node
     gazebo_spawn_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(PathJoinSubstitution(
             [pkg_path, 'launch', 'jackal_gazebo_launch.py']
@@ -91,7 +92,7 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             'use_sim_time': use_sim_time,
             'namespace': namespace,
-            'prefix': prefix,
+            'namespace_prefix': namespace_prefix,
             'robot_name': robot_name,
             'x': LaunchConfiguration('x'),
             'y': LaunchConfiguration('y'),
@@ -100,7 +101,6 @@ def launch_setup(context, *args, **kwargs):
         }.items()
     )
 
-    # ROS 2 control node
     robot_controllers = PathJoinSubstitution([pkg_path, 'config', 'ros2_control.yaml'])
 
     ros2_control_launch = IncludeLaunchDescription(
@@ -111,11 +111,11 @@ def launch_setup(context, *args, **kwargs):
             'prefix': prefix,
             'use_sim_time': use_sim_time,
             'ros2_control_params': robot_controllers,
-            'namespace': namespace
+            'namespace': namespace,
+            'namespace_prefix': namespace_prefix,
         }.items()
     )
 
-    # EKF node
     ekf_file = PathJoinSubstitution([pkg_path, 'config', 'ekf.yaml'])
 
     ekf_node = IncludeLaunchDescription(
@@ -124,18 +124,24 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             'use_sim_time': use_sim_time,
             'ekf_params_file': ekf_file,
-            'namespace': namespace
+            'namespace': namespace,
+            'namespace_prefix': namespace_prefix
         }.items()
     )
 
     # Twist message remapping (Twist -> TwistStamped)
     twist_remap_node = Node(
-        package='jackal_description', executable='twist_to_twiststamped', output='screen',
-        name='twist_remap', namespace=namespace,
-        parameters=[{'use_sim_time': use_sim_time}],
+        package='jackal_description',
+        executable='twist_to_twiststamped',
+        output='screen',
+        name='twist_remap',
+        namespace=namespace,
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'frame_id': f'{prefix}base_link'
+        }],
     )
 
-    # RViz2 visualization (optional)
     rviz2_path = PathJoinSubstitution([pkg_path, 'rviz', 'jackal.rviz'])
 
     rviz2_node = Node(
@@ -188,27 +194,38 @@ def generate_launch_description():
             description='Gripper model to attach to the arm'
         ),
         DeclareLaunchArgument(
-            'prefix',
-            default_value='',
-            description='Prefix added to the jackal link and joint names'
-        ),
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='true',
-            choices=[
-                'true',
-                'false'],
-            description='Whether to use simulation time'),
-        DeclareLaunchArgument(
             'namespace',
             default_value='',
             description='Top-level namespace'
+        ),
+        DeclareLaunchArgument(
+            'prefix',
+            default_value='',
+            description='Prefix added to the jackal link and joint names'
         ),
         DeclareLaunchArgument(
             'rviz',
             default_value='false',
             choices=['true', 'false'],
             description='Whether to execute rviz2'
+        ),
+        DeclareLaunchArgument(
+            'use_camera',
+            default_value='true',
+            choices=['true', 'false'],
+            description='Whether to use a camera'
+        ),
+        DeclareLaunchArgument(
+            'use_lidar',
+            default_value='true',
+            choices=['true', 'false'],
+            description='Whether to use a lidar'
+        ),
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='true',
+            choices=['true', 'false'],
+            description='Whether to use simulation time'
         ),
         DeclareLaunchArgument(
             'x',
