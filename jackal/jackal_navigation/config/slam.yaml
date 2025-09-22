@@ -1,4 +1,10 @@
-slam_toolbox:
+# Slam Toolbox Configuration File
+#
+# This config file uses placeholders that are replaced at launch time in jackal_slam.launch.py
+#
+# <robot_namespace_prefix> - Combined namespace/prefix from launch args (e.g., "robot1/jackal_") - matches URDF links definitions
+# <robot_namespace>        - Namespace from launch args (e.g., "robot1") - for clean ROS2 sensor topics
+<robot_namespace>slam_toolbox:
   ros__parameters:
 
     # Plugin params
@@ -10,15 +16,19 @@ slam_toolbox:
     ceres_loss_function: None
 
     # ROS Parameters
-    odom_frame: odom
+    odom_frame: <robot_namespace_prefix>odom
     map_frame: map
-    base_frame: base_link
+    base_frame: <robot_namespace_prefix>base_link
     scan_topic: scan
     use_map_saver: true
-    mode: mapping #mapping #localization
+    mode: mapping #localization
 
-    # map_file_name: /home/nilton/Desktop/Ros2/Kobuki-ROS2-Jazzy/labo2ser
-    # map_file_name: /home/nilton/Desktop/Ros2/Kobuki/SerMaze
+    # if you'd like to immediately start continuing a map at a given pose
+    # or at the dock, but they are mutually exclusive, if pose is given
+    # will use pose
+    # map_file_name: test_steve
+    # map_start_pose: [0.0, 0.0, 0.0]
+    # map_start_at_dock: true
 
     debug_logging: true
     throttle_scans: 1
@@ -30,7 +40,7 @@ slam_toolbox:
     minimum_time_interval: 0.5
     transform_timeout: 0.2
     tf_buffer_duration: 30.0
-    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
+    stack_size_to_use: 40000000 # program needs a larger stack size to serialize large maps
     enable_interactive_mode: true
 
     # General Parameters
