@@ -3,11 +3,17 @@
 <package format="3">
   <name>jackal_navigation</name>
   <version>0.0.0</version>
-  <description>SLAM and NAVIGATION2 pkgs</description>
+  <description>Launch files and configuration for SLAM and navigation of the Jackal mobile robot platform.</description>
   <maintainer email="nilton.csv18@edu.udesc.br">nilton</maintainer>
   <license>BSD-3-Clause</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>nav2_common</build_depend>
+  <build_depend>navigation2</build_depend>
+  <build_depend>launch_ros</build_depend>
+
+  <exec_depend>slam_toolbox</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

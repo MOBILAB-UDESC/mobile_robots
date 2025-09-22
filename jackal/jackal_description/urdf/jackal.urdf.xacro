@@ -11,8 +11,6 @@
   <xacro:arg name="prefix" default=""/>
   <xacro:arg name="arm_prefix" default="kinova_"/>
 
-  <xacro:arg name="namespace" default="" />
-
   <xacro:arg name="arm" default="" />
   <xacro:arg name="gripper" default="" />
 

@@ -18,11 +18,9 @@ def arm_ros2_setup(context, *args, **kwargs):
             1. arm_controller
             2. gripper_controller (after arm_controller exits, if 'gripper' is enabled)
 
-            args[0] : namespace
-            args[1] : use_sim_time
+            args[0] : use_sim_time
     """
-    namespace = args[0]
-    use_sim_time = args[1]
+    use_sim_time = args[0]
 
     arm_name = LaunchConfiguration('arm', default='').perform(context)
     gripper_name = LaunchConfiguration('gripper', default='').perform(context)
@@ -47,7 +45,6 @@ def arm_ros2_setup(context, *args, **kwargs):
         executable='spawner',
         output='screen',
         name='joint_trajectory_controller',
-        namespace=namespace,
         arguments=[f'{arm_name}_arm_controller', '--param-file', ros2_control_params],
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -58,7 +55,6 @@ def arm_ros2_setup(context, *args, **kwargs):
             executable='spawner',
             output='screen',
             name='gripper_controller',
-            namespace=namespace,
             arguments=[f'{gripper_name}_gripper_controller', '--param-file', ros2_control_params],
             parameters=[{'use_sim_time': use_sim_time}],
         )
@@ -80,7 +76,6 @@ def generate_launch_description():
     pkg_path = get_package_share_directory('jackal_description')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
-    namespace = LaunchConfiguration('namespace', default='')
 
     ros2_control_params = LaunchConfiguration(
         'ros2_control_params',
@@ -89,7 +84,7 @@ def generate_launch_description():
 
     ros2_control_params = ReplaceString(
         source_file=ros2_control_params,
-        replacements={'<robot_namespace_prefix>': (LaunchConfiguration('namespace_prefix', default='')),
+        replacements={'<robot_prefix>': (LaunchConfiguration('prefix', default='')),
                       '<robot_prefix>': (LaunchConfiguration('prefix', default=''))},
     )
 
@@ -98,7 +93,6 @@ def generate_launch_description():
         executable='spawner',
         output='screen',
         name='joint_state_broadcaster',
-        namespace=namespace,
         arguments=['joint_state_broadcaster'],
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -108,7 +102,6 @@ def generate_launch_description():
         executable='spawner',
         output='screen',
         name='diff_drive_controller',
-        namespace=namespace,
         arguments=[f'diff_drive_base_controller', '--param-file', ros2_control_params],
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -127,7 +120,7 @@ def generate_launch_description():
                 on_exit=[
                     OpaqueFunction(
                         function=arm_ros2_setup,
-                        args=[namespace, use_sim_time],
+                        args=[use_sim_time],
                     )
                 ],
             )

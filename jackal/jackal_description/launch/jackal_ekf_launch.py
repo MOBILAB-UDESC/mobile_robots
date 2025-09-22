@@ -11,8 +11,8 @@ import yaml
 
 def setup_ekf(context, *args, **kwargs):
     """
-        Prepare the EKF YAML configuration file by replacing the <robot_namespace_prefix> placeholder
-        with the actual namespace/prefix for a robot and creates a launch node for the EKF.
+        Prepare the EKF YAML configuration file by replacing the <robot_prefix> placeholder
+        with the actual prefix for a robot and creates a launch node for the EKF.
     """
     ekf_config_path = LaunchConfiguration(
         'ekf_params_file',
@@ -20,27 +20,25 @@ def setup_ekf(context, *args, **kwargs):
             get_package_share_directory('jackal_description'), 'config', 'ekf.yaml'
         )
     )
-    namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
-    # Replace <robot_namespace_prefix> in the ekf.yaml file to support multiple-robot prefixes
+    # Replace <robot_prefix> in the ekf.yaml file to support multiple-robot prefixes
     ekf_config_path = ReplaceString(
         source_file=ekf_config_path,
         replacements={
-            '<robot_namespace_prefix>': LaunchConfiguration('namespace_prefix', default='')
+            '<robot_prefix>': LaunchConfiguration('prefix', default='')
         },
     )
-    ekf_params = {}
-    with open(ekf_config_path.perform(context), 'r') as file:
-        yaml_content = yaml.safe_load(file)
-        ekf_params = yaml_content['ekf_filter_node']['ros__parameters']
+    # ekf_params = {}
+    # with open(ekf_config_path.perform(context), 'r') as file:
+    #     yaml_content = yaml.safe_load(file)
+    #     ekf_params = yaml_content['ekf_filter_node']['ros__parameters']
 
     ekf_node = Node(
         package='robot_localization',
         executable='ekf_node',
         output='screen',
-        namespace=namespace,
-        parameters=[{'use_sim_time': use_sim_time, **ekf_params}],
+        parameters=[{'use_sim_time': use_sim_time}, ekf_config_path],
     )
 
     return [ekf_node]

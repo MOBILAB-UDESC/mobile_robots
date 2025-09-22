@@ -32,8 +32,8 @@
   <exec_depend>rviz2</exec_depend>
 
   <!-- Optional arm and gripper dependencies -->
-  <exec_depend>gen3_lite_description</exec_depend>
-  <exec_depend>kinova_2f_lite_description</exec_depend>
+  <!-- <exec_depend>gen3_lite_description</exec_depend>
+  <exec_depend>kinova_2f_lite_description</exec_depend> -->
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

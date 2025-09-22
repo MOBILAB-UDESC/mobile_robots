@@ -2,8 +2,7 @@
 #
 # This config file uses placeholders that are replaced at launch time:
 #
-# <robot_namespace_prefix> - Combined namespace/prefix from launch args (e.g., "robot1/jackal_") - matches URDF joint/frame definitions
-# <robot_prefix>           - Prefix from launch args (e.g., "jackal_")
+# <robot_prefix> - Combined prefix from launch args (e.g., "jackal_") - matches URDF joint/frame definitions
 #
 # Note: Arm controllers are configured separately in the arms_bringup package
 # https://github.com/MOBILAB-UDESC/arms.git
@@ -19,8 +18,8 @@
 /**/diff_drive_base_controller:
   ros__parameters:
     type: diff_drive_controller/DiffDriveController
-    left_wheel_names: ["<robot_namespace_prefix>rear_left_wheel", "<robot_namespace_prefix>front_left_wheel"]
-    right_wheel_names: ["<robot_namespace_prefix>rear_right_wheel", "<robot_namespace_prefix>front_right_wheel"]
+    left_wheel_names: ["<robot_prefix>rear_left_wheel", "<robot_prefix>front_left_wheel"]
+    right_wheel_names: ["<robot_prefix>rear_right_wheel", "<robot_prefix>front_right_wheel"]
 
     wheel_separation: 0.37559
     wheels_per_side: 1

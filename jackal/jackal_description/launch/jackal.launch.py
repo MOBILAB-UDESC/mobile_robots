@@ -35,17 +35,10 @@ def launch_setup(context, *args, **kwargs):
     arm = LaunchConfiguration('arm').perform(context)
     arm_prefix = LaunchConfiguration('arm_prefix').perform(context)
     gripper = LaunchConfiguration('gripper')
-    namespace = LaunchConfiguration('namespace')
     prefix = LaunchConfiguration('prefix').perform(context)
     use_sim_time = LaunchConfiguration('use_sim_time')
 
-    # Modify prefix to namespace/prefix if namespace is used
     robot_name = 'jackal'
-    namespace_prefix = prefix
-    if namespace.perform(context):
-        namespace_prefix = f'{namespace.perform(context)}/{prefix}'
-        arm_prefix = f'{namespace.perform(context)}/{arm_prefix}'
-        robot_name = f'{namespace.perform(context)}/jackal'
 
     pkg_name = 'jackal_description'
     pkg_path = get_package_share_directory(pkg_name)
@@ -57,8 +50,7 @@ def launch_setup(context, *args, **kwargs):
         ' arm_prefix:=', arm_prefix,
         ' gripper:=', gripper,
         ' name:=', robot_name,
-        ' namespace:=', namespace,
-        ' prefix:=', namespace_prefix,
+        ' prefix:=', prefix,
         ' sim_gazebo:=', use_sim_time,
         ' use_camera:=', LaunchConfiguration('use_camera'),
         ' use_lidar:=', LaunchConfiguration('use_lidar'),
@@ -68,7 +60,6 @@ def launch_setup(context, *args, **kwargs):
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        namespace=namespace,
         parameters=[{
             'use_sim_time': use_sim_time,
             'robot_description': robot_description
@@ -81,7 +72,6 @@ def launch_setup(context, *args, **kwargs):
         package='joint_state_publisher_gui',
         executable='joint_state_publisher_gui',
         output='screen',
-        namespace=namespace,
     )
 
     gazebo_spawn_node = IncludeLaunchDescription(
@@ -90,10 +80,9 @@ def launch_setup(context, *args, **kwargs):
         )),
         condition=IfCondition(LaunchConfiguration('use_sim_time')),
         launch_arguments={
-            'use_sim_time': use_sim_time,
-            'namespace': namespace,
-            'namespace_prefix': namespace_prefix,
+            'prefix': prefix,
             'robot_name': robot_name,
+            'use_sim_time': use_sim_time,
             'x': LaunchConfiguration('x'),
             'y': LaunchConfiguration('y'),
             'z': LaunchConfiguration('z'),
@@ -111,8 +100,7 @@ def launch_setup(context, *args, **kwargs):
             'prefix': prefix,
             'use_sim_time': use_sim_time,
             'ros2_control_params': robot_controllers,
-            'namespace': namespace,
-            'namespace_prefix': namespace_prefix,
+            'prefix': prefix,
         }.items()
     )
 
@@ -124,8 +112,7 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             'use_sim_time': use_sim_time,
             'ekf_params_file': ekf_file,
-            'namespace': namespace,
-            'namespace_prefix': namespace_prefix
+            'prefix': prefix
         }.items()
     )
 
@@ -135,7 +122,6 @@ def launch_setup(context, *args, **kwargs):
         executable='twist_to_twiststamped',
         output='screen',
         name='twist_remap',
-        namespace=namespace,
         parameters=[{
             'use_sim_time': use_sim_time,
             'frame_id': f'{prefix}base_link'
@@ -149,7 +135,6 @@ def launch_setup(context, *args, **kwargs):
         package='rviz2',
         executable='rviz2',
         output='screen',
-        namespace=namespace,
         arguments=['-d', rviz2_path],
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -192,11 +177,6 @@ def generate_launch_description():
                 'robotiq_2f_85',
             ],
             description='Gripper model to attach to the arm'
-        ),
-        DeclareLaunchArgument(
-            'namespace',
-            default_value='',
-            description='Top-level namespace'
         ),
         DeclareLaunchArgument(
             'prefix',

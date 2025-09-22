@@ -2,8 +2,7 @@
 # https://github.com/cra-ros-pkg/robot_localization/blob/jazzy-devel/params/ekf.yaml ###
 # This config file uses placeholders that are replaced at launch time:
 #
-# <robot_namespace_prefix> - Combined namespace/prefix from launch args (e.g., "robot1/jackal_") - matches URDF frame definitions
-
+# <robot_prefix> - Combined prefix from launch args (e.g., "jackal_") - matches URDF frame definitions
 ekf_filter_node:
     ros__parameters:
         frequency: 30.0
@@ -14,10 +13,10 @@ ekf_filter_node:
         publish_tf: true
 
         # Frame names use combined namespace/prefix to match URDF definitions
-        # map_frame: <robot_namespace_prefix>map
-        odom_frame: <robot_namespace_prefix>odom
-        base_link_frame: <robot_namespace_prefix>base_link
-        world_frame: <robot_namespace_prefix>odom
+        # map_frame: <robot_prefix>map
+        odom_frame: <robot_prefix>odom
+        base_link_frame: <robot_prefix>base_link
+        world_frame: <robot_prefix>odom
 
         odom0: diff_drive_base_controller/odom
         odom0_config: [false, false,  false,    # x, y, z

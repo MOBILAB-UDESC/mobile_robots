@@ -5,7 +5,6 @@
       *origin
       arm:=gen3_lite
       gripper:=kinova_2f_lite
-      namespace:=''
       prefix:=''
       sim_gazebo:=true
       use_camera:=true
